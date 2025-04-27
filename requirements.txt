@@ -1,2 +1,10 @@
 pillow>=9.0.0
-tkinter>=8.6; python_version < '3.7'
+reportlab>=3.6.0
+python-csv>=0.0.13
+pytest>=7.0.0
+black>=22.3.0
+pylint>=2.13.0
+mypy>=0.950
+sphinx>=4.5.0
+virtualenv>=20.14.0
+pip>=22.0.4
