@@ -75,12 +75,52 @@ class CertificateDesigner:
         
         tk.Button(self.color_button_frame, text="Select Color", command=self.select_color).pack(side=tk.LEFT, expand=True, fill=tk.X)
         
-        # CSV file
-        tk.Label(left_panel, text="Participants CSV:", bg="#f0f0f0").pack(anchor=tk.W)
-        self.csv_entry = tk.Entry(left_panel)
+        # Input method selection
+        tk.Label(left_panel, text="Input Method:", bg="#f0f0f0").pack(anchor=tk.W, pady=(10, 0))
+        self.input_method = tk.StringVar(value="csv")
+        
+        input_frame = tk.Frame(left_panel, bg="#f0f0f0")
+        input_frame.pack(fill=tk.X, pady=2)
+        
+        tk.Radiobutton(
+            input_frame, 
+            text="CSV File", 
+            variable=self.input_method, 
+            value="csv",
+            bg="#f0f0f0",
+            command=self.toggle_input_method
+        ).pack(side=tk.LEFT, padx=(0, 10))
+        
+        tk.Radiobutton(
+            input_frame, 
+            text="Paste Names", 
+            variable=self.input_method, 
+            value="text",
+            bg="#f0f0f0",
+            command=self.toggle_input_method
+        ).pack(side=tk.LEFT)
+        
+        # CSV file input (initially visible)
+        self.csv_frame = tk.Frame(left_panel, bg="#f0f0f0")
+        self.csv_frame.pack(fill=tk.X, pady=5)
+        
+        tk.Label(self.csv_frame, text="Participants CSV:", bg="#f0f0f0").pack(anchor=tk.W)
+        self.csv_entry = tk.Entry(self.csv_frame)
         self.csv_entry.insert(0, self.participants_csv)
         self.csv_entry.pack(fill=tk.X, pady=5)
-        tk.Button(left_panel, text="Browse CSV", command=self.browse_csv).pack(fill=tk.X, pady=2)
+        tk.Button(self.csv_frame, text="Browse CSV", command=self.browse_csv).pack(fill=tk.X, pady=2)
+        
+        # Text input (initially hidden)
+        self.text_frame = tk.Frame(left_panel, bg="#f0f0f0")
+        tk.Label(self.text_frame, text="Paste Names (one per line):", bg="#f0f0f0").pack(anchor=tk.W)
+        
+        # Add scrollbar to text area
+        text_scroll = tk.Scrollbar(self.text_frame)
+        text_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.names_text = tk.Text(self.text_frame, height=10, width=30, yscrollcommand=text_scroll.set)
+        self.names_text.pack(fill=tk.BOTH, expand=True, pady=5)
+        text_scroll.config(command=self.names_text.yview)
         
         # Output directory
         tk.Label(left_panel, text="Output Directory:", bg="#f0f0f0").pack(anchor=tk.W)
@@ -103,6 +143,18 @@ class CertificateDesigner:
         # Instructions
         instructions = "Instructions:\n1. Load a certificate template\n2. Click where you want to place the names\n3. Customize font, color, and size\n4. Generate certificates"
         tk.Label(left_panel, text=instructions, bg="#f0f0f0", justify=tk.LEFT, wraplength=280).pack(anchor=tk.W, pady=10)
+        
+        # Initialize the input method display
+        self.toggle_input_method()
+
+    def toggle_input_method(self):
+        """Toggle between CSV and text input methods"""
+        if self.input_method.get() == "csv":
+            self.text_frame.pack_forget()
+            self.csv_frame.pack(fill=tk.X, pady=5, after=self.color_button_frame)
+        else:
+            self.csv_frame.pack_forget()
+            self.text_frame.pack(fill=tk.X, pady=5, after=self.color_button_frame)
     
     def select_color(self):
         """Open a color chooser dialog and update the font color"""
@@ -319,7 +371,6 @@ class CertificateDesigner:
             return
             
         # Get values from UI
-        csv_path = self.csv_entry.get()
         output_dir = self.output_entry.get()
         font_path = self.font_path
         
@@ -332,10 +383,30 @@ class CertificateDesigner:
         os.makedirs(output_dir, exist_ok=True)
         
         try:
-            # Read participants
-            with open(csv_path, newline='', encoding='utf-8') as csvfile:
-                reader = csv.reader(csvfile)
-                participants = [row[0] for row in reader]
+            # Get participants based on the selected input method
+            if self.input_method.get() == "csv":
+                csv_path = self.csv_entry.get()
+                if not os.path.exists(csv_path):
+                    messagebox.showerror("Error", f"CSV file not found: {csv_path}")
+                    return
+                
+                # Read participants from CSV
+                with open(csv_path, newline='', encoding='utf-8') as csvfile:
+                    reader = csv.reader(csvfile)
+                    participants = [row[0] for row in reader]
+            else:
+                # Get participants from text area
+                text_content = self.names_text.get('1.0', tk.END).strip()
+                if not text_content:
+                    messagebox.showerror("Error", "Please enter at least one name.")
+                    return
+                
+                # Split by new lines and filter out empty lines
+                participants = [name.strip() for name in text_content.split('\n') if name.strip()]
+                
+            if not participants:
+                messagebox.showerror("Error", "No names found. Please check your input.")
+                return
                 
             # Set progress maximum
             total = len(participants)

@@ -9,8 +9,9 @@ A user-friendly application for generating personalized certificates in bulk fro
 - **Visual Certificate Designer**: Interactive GUI to customize certificate appearance
 - **Center-Aligned Names**: Automatically centers names at your chosen position
 - **Customizable Text**: Change font, size, and color to match your certificate design
-- **Bulk Generation**: Generate hundreds of certificates in seconds from a CSV file
+- **Bulk Generation**: Generate hundreds of certificates in seconds from a CSV file or direct text input
 - **PDF Output**: Produces professional PDF certificates ready for printing or digital distribution
+- **Flexible Input Options**: Use CSV files or paste names directly into the application
 
 ## Requirements
 
@@ -44,8 +45,15 @@ python certificate_designer.py
    - Load your certificate template image (JPG or PNG)
    - Click on the certificate to position the name
    - Customize the font, size, and color
-   - Select your participants CSV file 
+   - Choose your input method (CSV file or direct text input)
    - Generate certificates
+
+### Input Options
+
+You can choose between two methods to input names:
+
+1. **CSV File**: Select a CSV file containing a list of names, one per line.
+2. **Text Input**: Paste names directly into the text box, with one name per line.
 
 ### Using the Command Line Tool
 
